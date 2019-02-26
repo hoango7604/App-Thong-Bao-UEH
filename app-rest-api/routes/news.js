@@ -16,7 +16,7 @@ router.route('/:id')
 	.put(newsControllers.updateNews)
 	.delete(newsControllers.deleteNews);
 
-router.route('/:newsId/pushNotification')
+router.route('/:id/pushNotification')
 	.get(newsControllers.pushNotificationOfNews);
 
 module.exports = router;

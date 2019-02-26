@@ -1,4 +1,6 @@
+const request = require('request');
 const dbHelper = require('../utils/databaseHelper');
+const fcmAuth = require('../utils/fcm-authorization');
 
 const controllerHandler = (next, execute) => {
 	try {
@@ -97,11 +99,39 @@ module.exports = {
 		controllerHandler(next, () => {
 			// res.status(200).json({ message: 'getAllNews works' });
 
-			const id = `${req.params.id}`;
+			const id = req.params.id;
 
-			const queryString = `DELETE FROM news WHERE id = ${id}`;
+			const queryString = `SELECT * FROM news WHERE id = ${id}`;
 			dbHelper.query(queryString, (results) => {
-				res.status(200).json({ data: results });
+				const title = results[0].title;
+				const body = results[0].contentNotification;
+
+				fcmAuth.getAccessToken()
+					.then(access_token => {
+						// res.status(200).json({ token: access_token });
+	
+						request.post({
+							headers: {
+								Authorization: `Bearer ${access_token}`
+							},
+							url: 'https://fcm.googleapis.com/v1/projects/android-pushnotification-24c95/messages:send',
+							body: JSON.stringify(
+								{
+									"message":{
+										"topic" : "updates",
+										"notification" : {
+											"body" : body,
+											"title" : title
+										}
+									}
+								}
+							)
+						}, (error, response, body) => {
+							if (error) throw error;
+	
+							res.status(200).json({ response, body });
+						});
+					});
 			});
 		});
 	}
