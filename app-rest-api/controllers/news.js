@@ -31,7 +31,7 @@ module.exports = {
 			const content = `'${req.body.content}'`;
 			const contentNotification = `'${req.body.contentNotification}'`;
 			const author = `'${req.body.author}'`;
-			const postdate = `${req.body.postdate}`;
+			const postdate = `NOW()`;
 
 			const queryString = `INSERT INTO news (id, title, content, contentNotification, author, postdate) VALUES (${id}, ${title}, ${content}, ${contentNotification}, ${author}, ${postdate})`;
 			dbHelper.query(queryString, (results) => {
@@ -119,9 +119,11 @@ module.exports = {
 								{
 									"message":{
 										"topic" : "updates",
-										"notification" : {
+										"data": {
 											"body" : body,
-											"title" : title
+											"title" : title,
+											// Still hard code, need to replace after
+											"img_url": "https://firebasestorage.googleapis.com/v0/b/android-pushnotification-24c95.appspot.com/o/images%2Ftuoitre.jpg?alt=media&token=cdd93b03-2480-472a-adb1-503d01d1f819"
 										}
 									}
 								}
