@@ -58,40 +58,66 @@
 		const uploader = document.getElementById('uploader');
 		const fileBtn = document.getElementById('fileBtn');
 
+		const isImageFormat = (file) => {
+			const validFileExtensions = [ ".jpg" ];
+			const fileName = file.name;
+
+			let isValid = false;
+			for (let i = 0; i < validFileExtensions.length; i++) {
+				let currentExtension = validFileExtensions[i];
+
+				if (fileName.substr(fileName.length - currentExtension.length, currentExtension.length).toLowerCase() == currentExtension.toLowerCase()) {
+					isValid = true;
+					break;
+				}
+			}
+		
+			return isValid;
+		}
+
 		// Listen for file selection
 		fileBtn.addEventListener('change', (e) => {
 			// Get file
 			const file = e.target.files[0];
 
-			// Create a store ref
-			const storageRef = firebase.storage().ref(`images/${file.name}`);
+			if (!isImageFormat(file)) {
+				alert('File upload must be in type jpg');
+			}
+			// Check file size (<= 500KB)
+			else if (file.size / 1024 > 500) {
+				alert('Image must be under 500KB');
+			}
+			else {
+				// Create a store ref
+				const storageRef = firebase.storage().ref(`images/${file.name}`);
 
-			// Upload file
-			let task = storageRef.put(file);
+				// Upload file
+				let task = storageRef.put(file);
 
-			// Upload progress bar
-			task.on(
-				'state_changed',
+				// Upload progress bar
+				task.on(
+					'state_changed',
 
-				// Upload progress
-				snapshot => {
-					let percentage = snapshot.bytesTransferred / snapshot.totalBytes * 100;
-					uploader.value = percentage;
-				},
+					// Upload progress
+					snapshot => {
+						let percentage = snapshot.bytesTransferred / snapshot.totalBytes * 100;
+						uploader.value = percentage;
+					},
 
-				// Possible error
-				error => {
-					alert('Có lỗi xảy ra. Vui lòng thử lại');
-				},
+					// Possible error
+					error => {
+						alert('Có lỗi xảy ra. Vui lòng thử lại');
+					},
 
-				// Complete
-				() => {
-					task.snapshot.ref.getDownloadURL().then(downloadURL => {
-						alert(`File available at ${downloadURL}`);
-						document.getElementById('img-thumbnail').src = downloadURL;
-					});
-				}
-			)
+					// Complete
+					() => {
+						task.snapshot.ref.getDownloadURL().then(downloadURL => {
+							alert(`File available at ${downloadURL}`);
+							document.getElementById('img-thumbnail').src = downloadURL;
+						});
+					}
+				);
+			}
 		});
 
 		</script>
